@@ -63,40 +63,51 @@ for t in 0:50:300
     sleep(0.01)
 end
 
-
 # Allen-Cahn
-û₀ = T*cos.(cos.(x.-0.1))
-ϵ=1/3
-tmp = similar(û₀)
-w = (D2,T,Ti,tmp,similar(tmp),similar(tmp))
-function allen_cahn(dû,û,w,t)
-    D2,T,Ti,tmp,u,uc = w
-    mul!(u,Ti,û)
-    @.uc = u^3
-    mul!(u,T,uc)
-    mul!(tmp,D2,û)
-    @.dû = 10*tmp + (u-û)/(ϵ^2)
+function cheb(N)
+    N==0 && return (0,1)
+    x = cos.(pi*(0:N)/N)
+    c = [2; ones(N-1,1); 2].*(-1).^(0:N)
+    X = hcat([x for i in 1:N+1]...)
+    dX = X-X'
+    D  = (c*(1 ./c)')./(dX+I)      # off-diagonal entries
+    D  = D .- Diagonal(vec(sum(D,dims=2)))                 # diagonal entries
+    D,x
+end
+N = 128
+ChebD2,x = cheb(N)
+xx = x
+x = x[2:N]
+w = .53*x + .47*sin.(-1.5*pi*x) - x # use w = u-x to make BCs homogeneous
+u = [1;w+x;-1]
+
+ϵ=0.01
+p = (ϵ*(ChebD2^2)[2:N, 2:N], x)
+function allen_cahn(du,u,p,t)
+    D2, x = p
+    mul!(du,D2,u)
+    @. du = du + (u + x) - (u + x)^3
 end
 
-prob = ODEProblem(allen_cahn, û₀, (0.0,5.0), w)
-@time û  = solve(prob, CVODE_BDF(); reltol=1e-5,abstol=1e-5)
+prob = ODEProblem(allen_cahn, w, (0.0,70), p)
+@time sol  = solve(prob, CVODE_BDF(); reltol=1e-5,abstol=1e-5)
 
+plot(xx, [1;x.+sol(0.0);-1])
+plot!(xx, [1;x.+sol(1);-1])
+plot!(xx, [1;x.+sol(2);-1])
+plot!(xx, [1;x.+sol(3);-1])
+plot!(xx, [1;x.+sol(4);-1])
+plot!(xx, [1;x.+sol(5);-1])
+plot!(xx, [1;x.+sol(6);-1])
+plot!(xx, [1;x.+sol(7);-1])
+plot!(xx, [1;x.+sol(8);-1])
+plot!(xx, [1;x.+sol(50);-1])
 
-plot(x, Ti*û(0.0))
-plot!(x, Ti*û(0.01))
-plot!(x, Ti*û(0.02))
-plot!(x, Ti*û(0.03))
-plot!(x, Ti*û(0.04))
-plot!(x, Ti*û(0.05))
-plot!(x, Ti*û(0.06))
-plot!(x, Ti*û(0.07))
-plot!(x, Ti*û(0.08))
-
-for t in 0:0.01:0.2
-    plt=(plot(x, Ti*û(t)))
-    ylims!(0.4, 1.1)
+for t in 0:1:70
+    plt=plot(xx, [1;x.+sol(t);-1])
+    ylims!(-1.1, 1.1)
     display(plt)
-    sleep(0.05)
+    sleep(0.01)
 end
 
 #Korteweg–de Vries (kdv) equation
