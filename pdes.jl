@@ -11,16 +11,19 @@ T = ApproxFun.plan_transform(S, n)
 Ti = ApproxFun.plan_itransform(S, n)
 
 # Burger's equation
-p = (D,D2,T,Ti)
 û₀ = T*cos.(cos.(x.-0.1))
 A = 0.01*D2
+tmp = similar(û₀)
+p = (D,D2,T,Ti,tmp,similar(tmp),similar(tmp))
 function burgers(dû,û,p,t)
-    D,D2,T,Ti = p
-    u = Ti*û
-    up = Ti*(D*û)
-    dû .= A*û .- T*(u.*up)
-    #x = T*(u.*up)
-    #@. dû .= -x
+    D,D2,T,Ti,u,up,tmp = p
+    mul!(u, Ti, û)
+    mul!(tmp, D, û)
+    mul!(up, Ti, tmp)
+    @. tmp = u*up
+    mul!(up, T, tmp)
+    mul!(tmp, A, û)
+    @. dû = tmp - up
 end
 
 prob = ODEProblem(burgers, û₀, (0.0,5.0), p)
