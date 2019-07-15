@@ -46,7 +46,7 @@ for i =1:n
 end
 û₀=T*u₀
 
-function KS(dû,û,q,t)
+function kuramoto_sivashinsky(dû,û,q,t)
     D,D2,T,Ti,D4 = q
     u = Ti*û
     up =T*(u.*u)
@@ -54,7 +54,7 @@ function KS(dû,û,q,t)
 end
 
 
-prob = ODEProblem(KS, û₀, (0.0,5.0), q)
+prob = ODEProblem(kuramoto_sivashinsky, û₀, (0.0,5.0), q)
 @time û  = solve(prob, CVODE_BDF(); reltol=1e-5,abstol=1e-5)
 plot(x,u₀)
 for t in 0:0.5:5
@@ -69,14 +69,14 @@ end
 w = (D2,T,Ti)
 û₀ = T*cos.(cos.(x.-0.1))
 ϵ=1/3
-function AllenCahn(dû,û,w,t)
+function allen_cahn(dû,û,w,t)
     D2,T,Ti = w
     u = Ti*û
     uc=u.^3
     dû .= 10*D2*û .+ (T*(uc)-û)/(ϵ^2)
 end
 
-prob = ODEProblem(AllenCahn, û₀, (0.0,5.0), w)
+prob = ODEProblem(allen_cahn, û₀, (0.0,5.0), w)
 @time û  = solve(prob, CVODE_BDF(); reltol=1e-5,abstol=1e-5)
 
 
@@ -98,13 +98,13 @@ for t in 0:0.01:0.2
 end
 plot(x,Ti*û₀)
 
-#Korteweg–de Vries (KdV) equation
+#Korteweg–de Vries (kdv) equation
 D3  = (Derivative(S,3) → S)[1:n,1:n]
 p = (D,D3,T,Ti)
 #û₀ = T*cos.(pi .*x)
 û₀ = T*cos.(x)
 δ=0.022
-function KdV(dû,û,p,t)
+function kdv(dû,û,p,t)
     D,D3,T,Ti = p
     u = Ti*û
     up = Ti*(D*û)
@@ -112,7 +112,7 @@ function KdV(dû,û,p,t)
     #dû .= .-((δ^2) .*(D3*û) .+ T*(u.*up))
 end
 
-prob = ODEProblem(KdV, û₀, (0.0,1.0), p)
+prob = ODEProblem(kdv, û₀, (0.0,1.0), p)
 @time û  = solve(prob, CVODE_BDF(); reltol=1e-5,abstol=1e-5) #59s
 
 plot(x,Ti*û₀)
