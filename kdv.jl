@@ -110,7 +110,7 @@ labels = hcat(#"KenCarp3", "KenCarp4", "KenCarp5",
                             numruns=5, error_estimate=:l2,
                             save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #226s
 
-plot(wp4, label=labels, markershape=:auto, title="IMEX methods, nondiagonal linsolve, medium order")
+plot(wp4, label=labels, markershape=:auto, title="IMEX methods, band linsolve, medium order")
 
 #2.ExpRK methods
 abstols = 0.1 .^ (7:11) # all fixed dt methods so these don't matter much
