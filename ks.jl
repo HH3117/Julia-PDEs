@@ -11,24 +11,25 @@ D  = (Derivative(S) → S)[1:n,1:n]
 T = ApproxFun.plan_transform(S, n)
 Ti = ApproxFun.plan_itransform(S, n)
 
-# Burgers equation
-û₀ = T*cos.(cos.(x.-0.1))
-A = 0.03*D2
-tmp = similar(û₀)
-p = (D,D2,T,Ti,tmp,similar(tmp))
-function burgers_nl(dû,û,p,t)
-    D,D2,T,Ti,u,tmp = p
-    mul!(tmp, D, û)
-    mul!(u, Ti, tmp)
-    mul!(tmp, Ti, û)
-    @. tmp = tmp*u
-    mul!(u, T, tmp)
+# Kuramoto-Sivashinsky
+D4 = Derivative(S,4)[1:n,1:n]
+û₀ = T*(cos.(x./16).*(1 .+ sin.(x./2.04)))
+tmp=similar(û₀)
+q = (D,T,Ti,tmp,similar(tmp),similar(tmp))
+function kuramoto_sivashinsky(dû,û,q,t)
+    D,T,Ti,tmp,u,uc = q
+    mul!(u, D, û)
+    mul!(tmp, Ti, u)
+    mul!(u, Ti, û)
+    @. tmp=tmp*u
+    mul!(u,T, tmp)
+    #mul!(uc, D2, û)
     @. dû = - u
 end
 
-#Reference solution using Rodas5
-prob = SplitODEProblem(DiffEqArrayOperator(Diagonal(A)), burgers_nl, û₀, (0.0,5.0), p)
-sol  = solve(prob, Rodas5(autodiff=false); reltol=1e-12,abstol=1e-12)
+#Reference solution using RadauIIA5
+prob = SplitODEProblem(DiffEqArrayOperator(-Diagonal(D4+D2)), kuramoto_sivashinsky, û₀, (0.0,5.0), q)
+sol  = solve(prob,RadauIIA5(autodiff=false); reltol=1e-14,abstol=1e-14)
 test_sol = TestSolution(sol)
 
 tslices=[0.0 1.0 2.0 3.0 5.0]
@@ -57,7 +58,7 @@ labels = ["IMEXEuler" "CNAB2" "CNLF2" "SBDF2"]
 @time wp1 = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true,names=labels,
                             numruns=5,seconds=5,
-                            save_everystop=false,appxsol=test_sol,maxiters=Int(1e5));#52s
+                            save_everystop=false,appxsol=test_sol,maxiters=Int(1e5));#50s
 
 plot(wp1,label=labels,markershape=:auto,title="IMEX methods, diagonal linsolve, low order")
 
@@ -72,7 +73,7 @@ labels = hcat("NorsettEuler",
 @time wp2 = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5,
-                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #9.8s
+                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #11s
 
 plot(wp2, label=labels, markershape=:auto, title="ExpRK methods, low order")
 
@@ -80,7 +81,7 @@ plot(wp2, label=labels, markershape=:auto, title="ExpRK methods, low order")
 abstols = 0.1 .^ (5:8) # all fixed dt methods so these don't matter much
 reltols = 0.1 .^ (1:4)
 multipliers = 0.5 .^ (0:3)
-setups = [Dict(:alg => CNAB2(linsolve=diag_linsolve), :dts => 5e-3 * multipliers),
+setups = [Dict(:alg => CNAB2(linsolve=diag_linsolve), :dts => 5e-3 * multipliers)
           #Dict(:alg => CNAB2(linsolve=LS_GMRES), :dts => 5e-3 * multipliers),
           Dict(:alg => ETDRK2(), :dts => 1e-2 * multipliers)]
 labels = ["CNAB2 (diagonal linsolve)" "ETDRK2"]#"CNAB2 (Krylov linsolve)"]
@@ -119,11 +120,11 @@ setups = [Dict(:alg => ETDRK3(), :dts => 1e-2 * multipliers),
           Dict(:alg => ETDRK4(), :dts => 1e-2 * multipliers),
           Dict(:alg => HochOst4(), :dts => 1e-2 * multipliers)]
 labels = hcat("ETDRK3 (caching)", "ETDRK4 (caching)",
-              "HochOst4 (caching)"]#,"ETDRK4 (m=5)" "ETDRK3 (m=5)" "HochOst4 (m=5)")
+              "HochOst4 (caching)")#,"ETDRK4 (m=5)" "ETDRK3 (m=5)" "HochOst4 (m=5)")
 @time wp5 = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
-                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #42s
+                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #21s
 
 plot(wp5, label=labels, markershape=:auto, title="ExpRK methods, medium order")
 
