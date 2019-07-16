@@ -26,7 +26,7 @@ function burgers_nl(dû,û,p,t)
     @. dû = - u
 end
 
-#Reference solution using CVODE_BDF
+#Reference solution using Rodas5
 prob = SplitODEProblem(DiffEqArrayOperator(Diagonal(A)), burgers_nl, û₀, (0.0,5.0), p)
 sol  = solve(prob, Rodas5(autodiff=false); reltol=1e-12,abstol=1e-12)
 test_sol = TestSolution(sol)
