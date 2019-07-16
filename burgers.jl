@@ -11,7 +11,7 @@ D  = (Derivative(S) → S)[1:n,1:n]
 T = ApproxFun.plan_transform(S, n)
 Ti = ApproxFun.plan_itransform(S, n)
 
-# Burger's equation
+# Burgers equation
 û₀ = T*cos.(cos.(x.-0.1))
 A = 0.03*D2
 tmp = similar(û₀)
@@ -83,7 +83,7 @@ multipliers = 0.5 .^ (0:3)
 setups = [Dict(:alg => CNAB2(linsolve=diag_linsolve), :dts => 5e-3 * multipliers)]
           #Dict(:alg => CNAB2(linsolve=LS_GMRES), :dts => 5e-3 * multipliers),
           Dict(:alg => ETDRK2(), :dts => 1e-2 * multipliers)]
-labels = ["CNAB2 (dense linsolve)" "ETDRK2"]#"CNAB2 (Krylov linsolve)" "ETDRK2 (m=5)"]
+labels = ["CNAB2 (diagonal linsolve)" "ETDRK2"]#"CNAB2 (Krylov linsolve)"]
 @time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
@@ -107,9 +107,9 @@ labels = hcat(#"KenCarp3", "KenCarp4", "KenCarp5",
 @time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
-                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #996s
+                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #226s
 
-plot(wp, label=labels, markershape=:auto, title="IMEX methods, dense linsolve, medium order")
+plot(wp, label=labels, markershape=:auto, title="IMEX methods, nondiagonal linsolve, medium order")
 
 #2.ExpRK methods
 abstols = 0.1 .^ (7:11) # all fixed dt methods so these don't matter much
@@ -123,9 +123,9 @@ labels = hcat("ETDRK3 (caching)", "ETDRK4 (caching)",
 @time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
-                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5));
+                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #42s
 
-plot(wp, label=labels, markershape=:auto, title="ExpRK methods, medium order") #42s
+plot(wp, label=labels, markershape=:auto, title="ExpRK methods, medium order")
 
 #Between family comparisons
 abstols = 0.1 .^ (7:11)
@@ -136,8 +136,8 @@ setups = [#Dict(:alg => KenCarp5(linsolve=diag_linsolve)),
           #Dict(:alg => KenCarp5(linsolve=LS_GMRES)),
           Dict(:alg => ETDRK3(), :dts => 1e-2 * multipliers),
           Dict(:alg => ETDRK4(), :dts => 1e-2 * multipliers)]
-labels = hcat("ARKODE (dense linsolve)")#,"KenCarp5 (dense linsolve)" "KenCarp5 (Krylov linsolve)",
-                        #"ARKODE (Krylov linsolve)", "ETDRK3 (m=5)", "ETDRK4 (m=5)")
+labels = hcat("ARKODE (diagonal linsolve)", "ETDRK3 ()", "ETDRK4 ()")#,"KenCarp5 (dense linsolve)" "KenCarp5 (Krylov linsolve)",
+                        #"ARKODE (Krylov linsolve)")
 @time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
