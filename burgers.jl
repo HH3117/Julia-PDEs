@@ -84,12 +84,12 @@ setups = [Dict(:alg => CNAB2(linsolve=diag_linsolve), :dts => 5e-3 * multipliers
           #Dict(:alg => CNAB2(linsolve=LS_GMRES), :dts => 5e-3 * multipliers),
           Dict(:alg => ETDRK2(), :dts => 1e-2 * multipliers)]
 labels = ["CNAB2 (diagonal linsolve)" "ETDRK2"]#"CNAB2 (Krylov linsolve)"]
-@time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
+@time wp3 = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
                             save_everystep=false, appxsol=test_sol, maxiters=Int(1e5));#3.8s
 
-plot(wp, label=labels, markershape=:auto, title="Between family, low orders")
+plot(wp3, label=labels, markershape=:auto, title="Between family, low orders")
 
 #Low tolerances
 #In-family comparisons
@@ -104,12 +104,12 @@ setups = [#Dict(:alg => KenCarp3(linsolve=diag_linsolve)),
           Dict(:alg => ARKODE(Sundials.Implicit(), order=5, linear_solver=:Band, jac_upper=1, jac_lower=1))]
 labels = hcat(#"KenCarp3", "KenCarp4", "KenCarp5",
               "ARKODE3", "ARKODE4", "ARKODE5")
-@time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
+@time wp4 = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
                             save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #226s
 
-plot(wp, label=labels, markershape=:auto, title="IMEX methods, nondiagonal linsolve, medium order")
+plot(wp4, label=labels, markershape=:auto, title="IMEX methods, nondiagonal linsolve, medium order")
 
 #2.ExpRK methods
 abstols = 0.1 .^ (7:11) # all fixed dt methods so these don't matter much
@@ -120,12 +120,12 @@ setups = [Dict(:alg => ETDRK3(), :dts => 1e-2 * multipliers),
           Dict(:alg => HochOst4(), :dts => 1e-2 * multipliers)]
 labels = hcat("ETDRK3 (caching)", "ETDRK4 (caching)",
               "HochOst4 (caching)"]#,"ETDRK4 (m=5)" "ETDRK3 (m=5)" "HochOst4 (m=5)")
-@time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
+@time wp5 = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
                             save_everystep=false, appxsol=test_sol, maxiters=Int(1e5)); #42s
 
-plot(wp, label=labels, markershape=:auto, title="ExpRK methods, medium order")
+plot(wp5, label=labels, markershape=:auto, title="ExpRK methods, medium order")
 
 #Between family comparisons
 abstols = 0.1 .^ (7:11)
@@ -138,12 +138,12 @@ setups = [#Dict(:alg => KenCarp5(linsolve=diag_linsolve)),
           Dict(:alg => ETDRK4(), :dts => 1e-2 * multipliers)]
 labels = hcat("ARKODE (diagonal linsolve)", "ETDRK3 ()", "ETDRK4 ()")#,"KenCarp5 (dense linsolve)" "KenCarp5 (Krylov linsolve)",
                         #"ARKODE (Krylov linsolve)")
-@time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
+@time wp6 = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
                             save_everystep=false, appxsol=test_sol, maxiters=Int(1e5));#178s
 
-plot(wp, label=labels, markershape=:auto, title="Between family, medium order")
+plot(wp6, label=labels, markershape=:auto, title="Between family, medium order")
 
 
 #Environment information
