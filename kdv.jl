@@ -46,7 +46,7 @@ diag_linsolve=LinSolveFactorize(W->let tmp = tmp
 end)
 
 #In-family comparisons
-#1.IMEX methods (dense linear solver)
+#1.IMEX methods (diagonal linear solver)
 abstols = 0.1 .^ (5:8)
 reltols = 0.1 .^ (1:4)
 multipliers =  0.5 .^ (0:3)
@@ -94,7 +94,7 @@ plot(wp3, label=labels, markershape=:auto, title="Between family, low orders")
 
 #Low tolerances
 #In-family comparisons
-#1.IMEX methods (dense linear solver)
+#1.IMEX methods (band linear solver)
 abstols = 0.1 .^ (7:13)
 reltols = 0.1 .^ (4:10)
 setups = [#Dict(:alg => KenCarp3(linsolve=diag_linsolve)),
