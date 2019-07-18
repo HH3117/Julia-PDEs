@@ -183,7 +183,7 @@ labels = hcat("ETDRK3 (caching)", "ETDRK3 (m=5)", "ETDRK4 (caching)",
 @time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
-                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5));
+                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5));#740s
 
 plot(wp, label=labels, markershape=:auto, title="ExpRK methods, medium order")
 
@@ -203,6 +203,6 @@ labels = hcat("KenCarp5 (dense linsolve)", "ARKODE (dense linsolve)", "KenCarp5 
 @time wp = WorkPrecisionSet(prob,abstols,reltols,setups;
                             print_names=true, names=labels,
                             numruns=5, error_estimate=:l2,
-                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5));
+                            save_everystep=false, appxsol=test_sol, maxiters=Int(1e5));#162s
 
 plot(wp, label=labels, markershape=:auto, title="Between family, medium order")
