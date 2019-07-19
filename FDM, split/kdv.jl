@@ -10,7 +10,7 @@ function lin_term(N)
     du2 = -ones(N - 1) # off diagonal
     d = (1/2) * ones(N-2)
     d2 = (-1/2) * ones(N-2)
-    DiffEqArrayOperator(-0.1*(1/dx^2) * diagm(-2 => d2, -1 => du, 1 => du2, 2 => d))
+    DiffEqArrayOperator(-0.1*(1/dx^3) * diagm(-2 => d2, -1 => du, 1 => du2, 2 => d))
 end
 
 function nl_term(N)
