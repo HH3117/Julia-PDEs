@@ -10,14 +10,14 @@ function lin_term(N)
     du2 = -ones(N - 1) # off diagonal
     d = (1/2) * ones(N-2)
     d2 = (-1/2) * ones(N-2)
-    DiffEqArrayOperator(-0.1*(1/dx^3) * diagm(-2 => d2, -1 => du, 1 => du2, 2 => d))
+    DiffEqArrayOperator(-0.05*(1/dx^3) * diagm(-2 => d2, -1 => du, 1 => du2, 2 => d))
 end
 
 function nl_term(N)
     dx = 1/(N + 1)
     du = ones(N - 1) # super diagonal
     dl = -ones(N - 1) # lower diagonal
-    D = (0.2/(4*dx)) * diagm(-1 => dl, 1 => du)
+    D = (0.1/(4*dx)) * diagm(-1 => dl, 1 => du)
 
     tmp = zeros(N)
     function (du,u,p,t)
@@ -39,8 +39,8 @@ function kdv(N)
     xs, prob
 end;
 
-xs, prob = kdv(200)
-sol = solve(prob, RadauIIA5(autodiff=false); abstol=1e-11, reltol=1e-11)
+xs, prob = kdv(50)
+sol = solve(prob, RadauIIA5(autodiff=false); abstol=1e-11, reltol=1e-11, dt=0.0001, adptive=false)
 test_sol = TestSolution(sol);
 
 tslices = [0.0 0.25 0.50 0.75 1.00]
