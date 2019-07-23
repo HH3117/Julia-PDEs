@@ -3,6 +3,7 @@ using DiffEqDevTools
 using LinearAlgebra
 using Plots; gr()
 
+
 # Define the linear and nonlinear terms
 function lin_term(N)
     dx = 1/(N + 1)
@@ -11,10 +12,7 @@ function lin_term(N)
     d = (1/2) * ones(N-2)
     d2 = (-1/2) * ones(N-2)
     diag=-2 * ones(N)
-    #DiffEqArrayOperator(0.001*(1/dx^3) * diagm(-2 => d2, -1 => du, 1 => du2, 2 => d))
-    DiffEqArrayOperator((0.001/dx^3) * diagm(-2 => d2, -1 => du, 1 => du2, 2 => d)
-                        +(0.01/dx^2) * diagm(-1 => du, 0 => diag, 1 => du))
-
+    DiffEqArrayOperator(5e-5*(1/dx^3) * diagm(-2 => d2, -1 => du, 1 => du2, 2 => d))
 end
 
 function nl_term(N)
@@ -37,7 +35,8 @@ function kdv(N)
     dx = 1 / (N + 1)
     xs = (1:N) * dx
 
-    f0 = x -> cos(2*pi*x)
+    μ0 = 0.3; σ0 = 0.05
+    f0 = x -> 0.9*exp(-(x - μ0)^2 / (2 * σ0^2))
     u0 = f0.(xs)
     prob = SplitODEProblem(f1, f2, u0, (0.0, 1.0))
     xs, prob
@@ -45,14 +44,13 @@ end;
 
 
 xs, prob = kdv(200)
-sol = solve(prob, Tsit5(); abstol=1e-11, reltol=1e-11, dt=(1/20)^3/2, adptive=false)
+sol = solve(prob, Tsit5(); abstol=1e-11, reltol=1e-11, dt=1e-7, adptive=false)
 test_sol = TestSolution(sol);
 
 tslices = [0.0 0.25 0.50 0.75 1.00]
 ys = hcat((sol(t) for t in tslices)...)
 labels = ["t = $t" for t in tslices]
 fn=plot(xs, ys, label=labels)
-
 
 # Linear solvers
 const LS_Dense = LinSolveFactorize(lu)
