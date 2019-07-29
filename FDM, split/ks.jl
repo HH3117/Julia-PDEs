@@ -13,7 +13,7 @@ function lin_term(N)
     d4 = 6 * ones(N) # main diagonal
     du4 = (-4) * ones(N - 1) # off diagonal
     duu4 = ones(N - 2)
-    DiffEqArrayOperator(-0.04*((1/dx^2) * diagm(-1 => du2, 0 => d2, 1 => du2)
+    DiffEqArrayOperator(-0.0004*((1/dx^2) * diagm(-1 => du2, 0 => d2, 1 => du2)
                         +(1/dx^4) * diagm(-2 => duu4, -1 => du4, 0 => d4, 1 => du4, 2 => duu4)))
 end
 
@@ -37,17 +37,18 @@ function ks(N)
     dx = 1 / (N + 1)
     xs = (1:N) * dx
 
-    f0 = x -> cos((x*2*pi) / 16) * (1 + sin((x*2*pi) / 2.04))
+    μ0 = 0.3; σ0 = 0.05
+    f0 = x -> 0.6*exp(-(x - μ0)^2 / (2 * σ0^2))
     u0 = f0.(xs)
-    prob = SplitODEProblem(f1, f2, u0, (0.0, 0.1))
+    prob = SplitODEProblem(f1, f2, u0, (0.0, 1.0))
     xs, prob
 end;
 
-xs, prob = ks(256)
+xs, prob = ks(200)
 sol = solve(prob, RadauIIA5(autodiff=false); abstol=1e-14, reltol=1e-14)
 test_sol = TestSolution(sol);
 
-tslices = [0.0 0.02 0.04 0.06 0.08 0.01]
+tslices = [0.0 0.25 0.50 0.75 1.]
 ys = hcat((sol(t) for t in tslices)...)
 labels = ["t = $t" for t in tslices]
 plot(xs, ys, label=labels)
