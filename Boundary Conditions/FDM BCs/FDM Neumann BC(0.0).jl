@@ -48,8 +48,8 @@ end
 
 prob = ODEProblem(bur, w, (0.0,1.0), p)
 sol  = solve(prob, TRBDF2(); reltol=1e-5,abstol=1e-5)
-plot(x,[sol(0.0)])
-plot!(x,[sol(0.2)])
-plot!(x,[sol(0.4)])
-plot!(x,[sol(0.6)])
-plot!(x,[sol(0.8)])
+plot(x,sol(0.0))
+plot!(x,sol(0.2))
+plot!(x,sol(0.4))
+plot!(x,sol(0.6))
+plot!(x,sol(0.8))
