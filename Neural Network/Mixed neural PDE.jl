@@ -79,7 +79,7 @@ function predict_n_ode()
 end
 loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
 
-data = Iterators.repeated((), 100)
+data = Iterators.repeated((), 1000)
 opt = ADAM(0.1)
 pre_pts=zeros(datasize)
 
@@ -92,7 +92,7 @@ cb = function ()
   end
   scatter!(pl,t,Flux.data(pre_pts),label="prediction")
   display(plot(pl))
-  loss_n_ode() < 0.09 && Flux.stop()
+  #loss_n_ode() < 0.09 && Flux.stop()
 end
 
 cb()
