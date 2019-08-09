@@ -1,7 +1,7 @@
 using ApproxFun,OrdinaryDiffEq, Sundials
 using LinearAlgebra
 using Plots; gr()
-using Flux, DiffEqFlux
+using Flux, DiffEqFlux, CuArrays
 #set up
 datasize = 30
 N = 4
@@ -45,7 +45,7 @@ function bur(du,u,p,t)
     r = tmp .+ r
     mul!(du,D2now,r)
 end
-prob = ODEProblem(bur, u0, (0.0,1.5), p)
+prob = ODEProblem(gpu(bur), gpu(u0), (0.0,1.5), p)
 true_sol=solve(prob,Tsit5(),saveat=t)
 plot(x,[true_sol(0.0)])
 plot!(x,[true_sol(0.6)])
@@ -64,30 +64,31 @@ function dudt(u::AbstractArray,pp,t)
     Flux.data(ann(QQ * u + r)) + D2now * (QQ * u + r)
 end
 
-prob2 = ODEProblem(dudt,u0,tspan,pp)
+prob2 = ODEProblem(gpu(dudt),gpu(u0),tspan,pp)
 
 _x=param(u0)
 #loss function
 function predict_n_ode()
-  diffeq_adjoint(pp,prob2,Tsit5(),u0=_x, saveat=t)
+  diffeq_adjoint(gpu(pp),prob2,Tsit5(),u0=gpu(_x), saveat=t)
 end
-loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
+loss_n_ode() = sum(abs2,ode_data .- cpu(predict_n_ode()))
 #callback and train
-data = Iterators.repeated((), 200)
+data = Iterators.repeated((), 10)
 opt = ADAM(0.1)
 pre_pts=zeros(datasize)
 cb = function ()
   display(loss_n_ode())
   pl = scatter(t,ode_data[1,:],label="data")
+  cul=cpu(predict_n_ode())
   for i= 1:datasize
-     pre_pts[i]= Flux.data((predict_n_ode().u)[i][1])
+     pre_pts[i]= Flux.data(cul[1,i])
   end
-  scatter!(pl,t,Flux.data(pre_pts),label="prediction")
+  scatter!(pl,t,pre_pts[:],label="prediction")
   display(plot(pl))
-  #loss_n_ode() < 0.09 && Flux.stop()
 end
 
 cb()
 
-ps = Flux.params(ann)
-Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
+#ps = Flux.params(ann)
+ps = Flux.params(gpu(ann))
+Flux.train!(loss_n_ode, ps, data, opt)
