@@ -1,7 +1,7 @@
 using ApproxFun,OrdinaryDiffEq, Sundials
 using LinearAlgebra
 using Plots; gr()
-using Flux, DiffEqFlux, CuArrays
+using Flux, DiffEqFlux#, CuArrays
 #set up
 datasize = 30
 N = 4
@@ -47,12 +47,12 @@ function bur(du,u,p,t)
 end
 prob = ODEProblem(gpu(bur), gpu(u0), (0.0,1.5), p)
 true_sol=solve(prob,Tsit5(),saveat=t)
-plot(x,[true_sol(0.0)])
-plot!(x,[true_sol(0.6)])
+plot(x,true_sol(0.0))
+plot!(x,true_sol(0.6))
 ode_data = Array(true_sol)
 
 #ML D1
-ann = Chain(Dense(N,50,tanh), Dense(50,N-2))
+ann = Chain(Dense(N,50,tanh), Dense(50,N-2)) |>gpu
 
 pp=D2now,QQ,ann,r
 function dudt(u::TrackedArray,pp,t)
@@ -89,5 +89,5 @@ end
 
 cb()
 
-#ps = Flux.params(ann)
-Flux.train!(loss_n_ode, ps, data, opt)
+ps = Flux.params(ann)
+Flux.train!(loss_n_ode, ps, data, opt, cb=cb)
