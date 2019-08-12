@@ -90,5 +90,4 @@ end
 cb()
 
 #ps = Flux.params(ann)
-ps = Flux.params(gpu(ann))
 Flux.train!(loss_n_ode, ps, data, opt)
