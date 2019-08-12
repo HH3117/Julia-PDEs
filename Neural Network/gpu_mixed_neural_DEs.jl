@@ -1,7 +1,7 @@
 using ApproxFun,OrdinaryDiffEq, Sundials
 using LinearAlgebra
 using Plots; gr()
-using Flux, DiffEqFlux#, CuArrays
+using Flux, DiffEqFlux, CuArrays
 #set up
 datasize = 30
 N = 4
@@ -73,7 +73,7 @@ function predict_n_ode()
 end
 loss_n_ode() = sum(abs2,ode_data .- cpu(predict_n_ode()))
 #callback and train
-data = Iterators.repeated((), 10)
+data = Iterators.repeated((), 200)
 opt = ADAM(0.1)
 pre_pts=zeros(datasize)
 cb = function ()
@@ -90,4 +90,4 @@ end
 cb()
 
 ps = Flux.params(ann)
-Flux.train!(loss_n_ode, ps, data, opt, cb=cb)
+@time Flux.train!(loss_n_ode, ps, data, opt, cb=cb)
