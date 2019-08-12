@@ -80,4 +80,4 @@ end
 cb()
 
 ps = Flux.params(dudt)
-Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
+@time Flux.train!(loss_n_ode, ps, data, opt, cb = cb)

@@ -5,7 +5,7 @@ using Plots; gr()
 using Flux, DiffEqFlux
 #set up
 datasize = 30
-N = 4
+N = 10
 tspan = (0.0f0,1.5f0)
 t = range(tspan[1],tspan[2],length=datasize)
 #FDM to invert PDE -> ODE
@@ -45,7 +45,8 @@ function bur(du,u,p,t)
     tmp2 = tmp .+ r
     mul!(du,D2now,tmp2)
     #u = sin.(u)
-    u = cos.(sin.(u))
+    #u = cos.(sin.(u))
+    #u = cos.(sin.(u.^3) .+ sin.(cos.(u.^2)) )
     mul!(tmp,QQ,u)
     r = tmp .+ r
     du .= du + D1now * r
