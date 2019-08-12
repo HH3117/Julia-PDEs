@@ -1,3 +1,4 @@
+#More complicated reaction term to test the efficiency of neural networks
 using ApproxFun,OrdinaryDiffEq, Sundials
 using LinearAlgebra
 using Plots; gr()
@@ -43,8 +44,8 @@ function bur(du,u,p,t)
     mul!(tmp,QQ,u)
     tmp2 = tmp .+ r
     mul!(du,D2now,tmp2)
-    u = sin.(u)
-    #u = cos.(sin.(u))
+    #u = sin.(u)
+    u = cos.(sin.(u))
     mul!(tmp,QQ,u)
     r = tmp .+ r
     du .= du + D1now * r
@@ -95,4 +96,4 @@ end
 cb()
 
 ps = Flux.params(ann)
-Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
+@time Flux.train!(loss_n_ode, ps, data, opt, cb = cb)
