@@ -5,7 +5,7 @@ using Plots; gr()
 using Flux, DiffEqFlux
 #set up
 datasize = 30
-N = 10
+N = 20
 tspan = (0.0f0,1.5f0)
 t = range(tspan[1],tspan[2],length=datasize)
 #FDM to invert PDE -> ODE
@@ -46,7 +46,7 @@ function bur(du,u,p,t)
     mul!(du,D2now,tmp2)
     #u = sin.(u)
     #u = cos.(sin.(u))
-    #u = cos.(sin.(u.^3) .+ sin.(cos.(u.^2)) )
+    u = cos.(sin.(u.^3) .+ sin.(cos.(u.^2)) )
     mul!(tmp,QQ,u)
     r = tmp .+ r
     du .= du + D1now * r
@@ -59,7 +59,8 @@ plot!(x,[true_sol(0.6)])
 ode_data = Array(true_sol)
 
 #ML D1
-ann = Chain(Dense(N,50,tanh), Dense(50,N-2))
+m=10 #turns out that m=10 with 3 layers perform the best for this prob
+ann = Chain(Dense(N,m,tanh),Dense(m,N-2))
 
 pp=D2now,QQ,ann,r
 function dudt(u::TrackedArray,pp,t)
@@ -80,7 +81,7 @@ function predict_n_ode()
 end
 loss_n_ode() = sum(abs2,ode_data .- predict_n_ode())
 #callback and train
-data = Iterators.repeated((), 200)
+data = Iterators.repeated((), 1000)
 opt = ADAM(0.1)
 pre_pts=zeros(datasize)
 cb = function ()
